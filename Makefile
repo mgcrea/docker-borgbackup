@@ -1,5 +1,5 @@
 BASE_IMAGE := ubuntu:16.04
-DOCKER_IMAGE := mgcrea/docker-borgbackup
+DOCKER_IMAGE := mgcrea/borgbackup
 IMAGE_VERSION := 1.0.7
 
 all: build
