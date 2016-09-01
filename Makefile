@@ -1,6 +1,6 @@
-BASE_IMAGE := debian:jessie
-DOCKER_IMAGE := silvio/docker-borgbackup
-IMAGE_VERSION := 1.0.6
+BASE_IMAGE := ubuntu:16.04
+DOCKER_IMAGE := mgcrea/docker-borgbackup
+IMAGE_VERSION := 1.0.7
 
 all: build
 

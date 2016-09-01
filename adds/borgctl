@@ -18,7 +18,7 @@
 # functions docker_* executed within a docker container
 # functions helper_* helper functions used on host and within container
 
-declare -r DOCKERCONTAINER="silviof/docker-borgbackup"
+declare -r DOCKERCONTAINER="mgcrea/docker-borgbackup"
 declare -r SCRIPT="$(realpath ${BASH_SOURCE[0]})"
 declare -r INSTALLDIR=$(dirname ${SCRIPT})
 
