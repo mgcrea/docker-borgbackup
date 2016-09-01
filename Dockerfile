@@ -1,4 +1,4 @@
-FROM debian:jessie
+FROM ubuntu:16.04
 
 MAINTAINER Silvio Fricke <silvio.fricke@gmail.com>
 
