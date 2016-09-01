@@ -1,56 +1,32 @@
 FROM ubuntu:16.04
-
 MAINTAINER Silvio Fricke <silvio.fricke@gmail.com>
 
 WORKDIR /borg
+ARG IMAGE_VERSION
+ENV IMAGE_VERSION ${IMAGE_VERSION:-1.0.0}
+ENV DEBIAN_FRONTEND noninteractive
+
+RUN echo 'APT::Install-Recommends 0;' >> /etc/apt/apt.conf.d/01norecommends \
+ && echo 'APT::Install-Suggests 0;' >> /etc/apt/apt.conf.d/01norecommends \
+  && apt-get update -y \
+  && apt-get install -y \
+    openssh-server \
+    realpath \
+  && apt-get clean -y \
+  && rm -rf /var/lib/apt/lists/*
+
+ADD https://github.com/borgbackup/borg/releases/download/${IMAGE_VERSION}/borg-linux64 /usr/bin/borg
+RUN chmod +x /usr/bin/borg
+
+ADD misc/shini/shini.sh /usr/bin/shini
+RUN chmod +x /usr/bin/shini
+
+ADD adds/borgctl /usr/bin/borgctl
+RUN chmod +x /usr/bin/borgctl
+
+ADD misc/borgbackup.ini /borg/example.ini
+
+RUN mkdir -p /REPO /BACKUP /RESTORE /STORAGE;
 
 ENTRYPOINT ["/usr/bin/borgctl"]
 CMD ["--help"]
-
-ARG IMAGE_VERSION
-ENV IMAGE_VERSION ${IMAGE_VERSION:-1.0.0}
-
-# to prevent some filepath issues with python code we have to set the language
-ENV LANG C.UTF-8
-RUN ln -sf /usr/share/zoneinfo/Europe/Berlin /etc/localtime
-
-RUN export DEBIAN_FRONTEND=noninteractive \
-    && apt-get update -y \
-    && apt-get install -y \
-        build-essential \
-        fuse \
-        git-core \
-        libacl1-dev \
-        libfuse-dev \
-        liblz4-dev \
-        liblzma-dev \
-        libssl-dev \
-        openssh-server \
-        pkg-config \
-        python-lz4 \
-        python-virtualenv \
-        python3-dev \
-    && apt-get clean -y \
-    && rm -rf /var/lib/apt/lists/*
-
-ADD misc/shini/shini.sh /usr/bin/shini
-
-RUN virtualenv --python=python3 /borg/env ; \
-    . /borg/env/bin/activate ; \
-    pip -v --log=/borg/pip-install.log install --upgrade pip ; \
-    pip -v --log=/borg/pip-install.log install cython ; \
-    pip -v --log=/borg/pip-install.log install tox
-
-RUN git clone https://github.com/borgbackup/borg.git ./borgbackup-git -b ${IMAGE_VERSION}; \
-    . /borg/env/bin/activate ; \
-    pip -v --log=/borg/pip-install.log install 'llfuse<0.41' ;\
-    pip -v --log=/borg/pip-install.log install -r ./borgbackup-git/requirements.d/development.txt ;\
-    pip -v --log=/borg/pip-install.log install -e ./borgbackup-git
-
-ADD misc/borgbackup.ini /borg/example.ini
-ADD adds/borgctl /usr/bin/borgctl
-
-RUN chmod a+x /usr/bin/borgctl /usr/bin/shini ;\
-    mkdir -p /REPO /BACKUP /RESTORE /STORAGE;\
-    rm -rf /etc/ld.so.cache
-
