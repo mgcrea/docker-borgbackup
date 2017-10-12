@@ -10,13 +10,19 @@ RUN echo 'APT::Install-Recommends 0;' >> /etc/apt/apt.conf.d/01norecommends \
  && echo 'APT::Install-Suggests 0;' >> /etc/apt/apt.conf.d/01norecommends \
   && apt-get update -y \
   && apt-get install -y \
+    iproute2 \
     openssh-server \
     realpath \
   && apt-get clean -y \
   && rm -rf /var/lib/apt/lists/*
 
-ADD https://github.com/borgbackup/borg/releases/download/${IMAGE_VERSION}/borg-linux64 /usr/bin/borg
-RUN chmod +x /usr/bin/borg
+# SSH startup fix. Missing privilege separation directory: /var/run/sshd
+RUN mkdir /var/run/sshd
+
+# Borg install
+ADD https://github.com/borgbackup/borg/releases/download/${IMAGE_VERSION}/borg-linux64 /borg/env/bin/borg
+RUN chmod +x /borg/env/bin/borg \
+  && ln -s /borg/env/bin/borg /usr/bin/borg
 
 ADD misc/shini/shini.sh /usr/bin/shini
 RUN chmod +x /usr/bin/shini
